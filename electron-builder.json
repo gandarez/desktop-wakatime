@@ -22,7 +22,7 @@
     "target": [
       {
         "target": "nsis",
-        "arch": ["x64", "arm64", "universal"]
+        "arch": ["x64", "arm64"]
       }
     ],
     "artifactName": "${productName}-Windows-${arch}.${ext}",
