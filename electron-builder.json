@@ -5,7 +5,7 @@
   "publish": null,
   "productName": "WakaTime",
   "directories": {
-    "output": "release"
+    "output": "release/"
   },
   "files": ["dist", "dist-electron", "public"],
   "mac": {
