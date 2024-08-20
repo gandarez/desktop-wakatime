@@ -93,7 +93,11 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: artifacts
-          path: release/
+          path: |
+            release/wakatime-linux-*.AppImage
+            release/wakatime-windows-*.exe
+            release/wakatime-mac-*.dmg
+          overwrite: true
       -
         name: Remove tag if failure
         if: ${{ failure() }}
