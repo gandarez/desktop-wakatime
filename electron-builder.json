@@ -3,7 +3,7 @@
   "appId": "com.WakaTime.WakaTime",
   "asar": true,
   "publish": null,
-  "productName": "wakatime",
+  "productName": "WakaTime Desktop",
   "directories": {
     "output": "release"
   },
@@ -15,7 +15,7 @@
         "arch": ["x64", "arm64", "universal"]
       }
     ],
-    "artifactName": "${productName}-mac-${arch}.${ext}",
+    "artifactName": "wakatime-mac-${arch}.${ext}",
     "icon": "./public/app-icon.icns",
     "category": "public.app-category.developer-tools"
   },
@@ -26,7 +26,7 @@
         "arch": ["x64", "arm64"]
       }
     ],
-    "artifactName": "${productName}-windows-${arch}.${ext}",
+    "artifactName": "wakatime-windows-${arch}.${ext}",
     "icon": "./public/app-icon.ico"
   },
   "nsis": {
@@ -42,6 +42,6 @@
         "arch": ["x64", "arm64"]
       }
     ],
-    "artifactName": "${productName}-linux-${arch}.${ext}"
+    "artifactName": "wakatime-linux-${arch}.${ext}"
   }
 }
