@@ -2,10 +2,10 @@
   "$schema": "https://raw.githubusercontent.com/electron-userland/electron-builder/master/packages/app-builder-lib/scheme.json",
   "appId": "com.WakaTime.WakaTime",
   "asar": true,
-  "publish": "never",
+  "publish": null,
   "productName": "WakaTime",
   "directories": {
-    "output": "release/${version}"
+    "output": "release"
   },
   "files": ["dist", "dist-electron", "public"],
   "mac": {
@@ -15,7 +15,7 @@
         "arch": ["x64", "arm64", "universal"]
       }
     ],
-    "artifactName": "${productName}-Mac-${arch}.${ext}",
+    "artifactName": "${productName}-mac-${arch}.${ext}",
     "icon": "./public/app-icon.icns",
     "category": "public.app-category.developer-tools"
   },
@@ -26,7 +26,7 @@
         "arch": ["x64", "arm64"]
       }
     ],
-    "artifactName": "${productName}-Windows-${arch}.${ext}",
+    "artifactName": "${productName}-windows-${arch}.${ext}",
     "icon": "./public/app-icon.ico"
   },
   "nsis": {
@@ -42,6 +42,6 @@
         "arch": ["x64", "arm64"]
       }
     ],
-    "artifactName": "${productName}-Linux-${arch}.${ext}"
+    "artifactName": "${productName}-linux-${arch}.${ext}"
   }
 }
