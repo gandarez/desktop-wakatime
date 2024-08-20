@@ -2,6 +2,7 @@
   "$schema": "https://raw.githubusercontent.com/electron-userland/electron-builder/master/packages/app-builder-lib/scheme.json",
   "appId": "com.WakaTime.WakaTime",
   "asar": true,
+  "publish": "never",
   "productName": "WakaTime",
   "directories": {
     "output": "release/${version}"
@@ -11,7 +12,7 @@
     "target": [
       {
         "target": "dmg",
-        "arch": ["x64", "arm64"]
+        "arch": ["x64", "arm64", "universal"]
       }
     ],
     "artifactName": "${productName}-Mac-${arch}.${ext}",
