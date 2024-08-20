@@ -89,7 +89,7 @@ jobs:
         name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: artifacts
+          name: artifacts-linux
           path: release/wakatime-linux-*.AppImage
       -
         name: Remove tag if failure
@@ -136,7 +136,7 @@ jobs:
         name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: artifacts
+          name: artifacts-darwin
           path: release/wakatime-mac-*.dmg
       -
         name: Remove tag if failure
@@ -183,7 +183,7 @@ jobs:
         name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: artifacts
+          name: artifacts-windows
           path: release/wakatime-windows-*.exe
       -
         name: Remove tag if failure
