@@ -17,7 +17,8 @@
     ],
     "artifactName": "wakatime-mac-${arch}.${ext}",
     "icon": "./public/app-icon.icns",
-    "category": "public.app-category.developer-tools"
+    "category": "public.app-category.developer-tools",
+    "identity": null
   },
   "win": {
     "target": [
