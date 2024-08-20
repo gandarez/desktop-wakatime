@@ -14,6 +14,7 @@ jobs:
     if: ${{ github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
     outputs:
+      semver: ${{ steps.format.outputs.semver }}
       semver_tag: ${{ steps.semver-tag.outputs.semver_tag }}
       previous_tag: ${{ steps.semver-tag.outputs.previous_tag }}
     steps:
@@ -50,31 +51,42 @@ jobs:
           ver=`echo "${{ steps.semver-tag.outputs.semver_tag }}" | sed 's/^v//'`
           echo "$ver"
           echo "semver=$ver" >> $GITHUB_OUTPUT
-      -
-        name: Update package.json
-        uses: jaywcjlove/github-action-package@main
-        with:
-          version: ${{ steps.format.outputs.semver }}
+      # -
+      #   name: Update package.json
+      #   uses: jaywcjlove/github-action-package@main
+      #   with:
+      #     version: ${{ steps.format.outputs.semver }}
 
-  build-linux:
-    name: Build Linux
-    runs-on: ubuntu-latest
+  build:
+    name: Build
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        node: [22]
+    runs-on: ${{ matrix.os }}
     needs: [version]
     steps:
       -
         name: Checkout
         uses: actions/checkout@v4
-      - 
-        name: Setup Node.js
-        uses: actions/setup-node@v4
+      # - 
+      #   name: Setup Node.js
+      #   uses: actions/setup-node@v4
+      #   with:
+      #     node-version: '22'
+      -
+        name: Update package.json
+        uses: jaywcjlove/github-action-package@main
         with:
-          node-version: '22'
+          version: ${{ needs.version.outputs.semver }}
       -
         name: Install dependencies
         shell: bash
         run: npm i
       -
         name: Build
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
         run: npm run build
       # -
@@ -95,46 +107,100 @@ jobs:
               repo: context.repo.repo,
               ref: "tags/${{ needs.version.outputs.semver_tag }}"
             })
+  
+  # build-linux:
+  #   name: Build Linux
+  #   runs-on: ubuntu-latest
+  #   needs: [version]
+  #   steps:
+  #     -
+  #       name: Checkout
+  #       uses: actions/checkout@v4
+  #     - 
+  #       name: Setup Node.js
+  #       uses: actions/setup-node@v4
+  #       with:
+  #         node-version: '22'
+  #     -
+  #       name: Update package.json
+  #       uses: jaywcjlove/github-action-package@main
+  #       with:
+  #         version: ${{ needs.version.outputs.semver }}
+  #     -
+  #       name: Install dependencies
+  #       shell: bash
+  #       run: npm i
+  #     -
+  #       name: Build
+  #       env:
+  #         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #       shell: bash
+  #       run: npm run build
+  #     # -
+  #     #   name: Upload artifacts
+  #     #   uses: actions/upload-artifact@v4
+  #     #   with:
+  #     #     name: binaries-linux
+  #     #     path: build/
+  #     -
+  #       name: Remove tag if failure
+  #       if: ${{ failure() }}
+  #       uses: actions/github-script@v7
+  #       with:
+  #         github-token: ${{ github.token }}
+  #         script: |
+  #           github.rest.git.deleteRef({
+  #             owner: context.repo.owner,
+  #             repo: context.repo.repo,
+  #             ref: "tags/${{ needs.version.outputs.semver_tag }}"
+  #           })
 
-  build-darwin:
-    name: Build Darwin
-    runs-on: macos-latest
-    needs: [version]
-    steps:
-      -
-        name: Checkout
-        uses: actions/checkout@v4
-      - 
-        name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-      -
-        name: Install dependencies
-        shell: bash
-        run: npm i
-      -
-        name: Build
-        shell: bash
-        run: npm run build
-      # -
-      #   name: Upload artifacts
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: unsigned-binaries-darwin
-      #     path: build/
-      -
-        name: Remove tag if failure
-        if: ${{ failure() }}
-        uses: actions/github-script@v7
-        with:
-          github-token: ${{ github.token }}
-          script: |
-            github.rest.git.deleteRef({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              ref: "tags/${{ needs.version.outputs.semver_tag }}"
-            })
+  # build-darwin:
+  #   name: Build Darwin
+  #   runs-on: macos-latest
+  #   needs: [version]
+  #   steps:
+  #     -
+  #       name: Checkout
+  #       uses: actions/checkout@v4
+  #     - 
+  #       name: Setup Node.js
+  #       uses: actions/setup-node@v4
+  #       with:
+  #         node-version: '22'
+  #     -
+  #       name: Update package.json
+  #       uses: jaywcjlove/github-action-package@main
+  #       with:
+  #         version: ${{ needs.version.outputs.semver }}
+  #     -
+  #       name: Install dependencies
+  #       shell: bash
+  #       run: npm i
+  #     -
+  #       name: Build
+  #       env:
+  #         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #       shell: bash
+  #       run: npm run build
+  #     # -
+  #     #   name: Upload artifacts
+  #     #   uses: actions/upload-artifact@v4
+  #     #   with:
+  #     #     name: unsigned-binaries-darwin
+  #     #     path: build/
+  #     -
+  #       name: Remove tag if failure
+  #       if: ${{ failure() }}
+  #       uses: actions/github-script@v7
+  #       with:
+  #         github-token: ${{ github.token }}
+  #         script: |
+  #           github.rest.git.deleteRef({
+  #             owner: context.repo.owner,
+  #             repo: context.repo.repo,
+  #             ref: "tags/${{ needs.version.outputs.semver_tag }}"
+  #           })
 
   # build-windows:
   #   name: Build Windows
