@@ -51,11 +51,6 @@ jobs:
           ver=`echo "${{ steps.semver-tag.outputs.semver_tag }}" | sed 's/^v//'`
           echo "$ver"
           echo "semver=$ver" >> $GITHUB_OUTPUT
-      # -
-      #   name: Update package.json
-      #   uses: jaywcjlove/github-action-package@main
-      #   with:
-      #     version: ${{ steps.format.outputs.semver }}
 
   build-linux:
     name: Build Linux
@@ -91,53 +86,6 @@ jobs:
         with:
           name: artifacts-linux
           path: release/wakatime-linux-*.AppImage
-      -
-        name: Remove tag if failure
-        if: ${{ failure() }}
-        uses: actions/github-script@v7
-        with:
-          github-token: ${{ github.token }}
-          script: |
-            github.rest.git.deleteRef({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              ref: "tags/${{ needs.version.outputs.semver_tag }}"
-            })
-  
-  build-darwin:
-    name: Build Darwin
-    runs-on: macos-latest
-    needs: [version]
-    steps:
-      -
-        name: Checkout
-        uses: actions/checkout@v4
-      - 
-        name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-      -
-        name: Update package.json
-        uses: jaywcjlove/github-action-package@main
-        with:
-          version: ${{ needs.version.outputs.semver }}
-      -
-        name: Install dependencies
-        shell: bash
-        run: npm i
-      -
-        name: Build
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        shell: bash
-        run: npm run build
-      -
-        name: Upload artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: artifacts-darwin
-          path: release/wakatime-mac-*.dmg
       -
         name: Remove tag if failure
         if: ${{ failure() }}
@@ -201,35 +149,32 @@ jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
-    needs: [
-      version,
-      build-linux,
-      build-darwin,
-      build-windows,
-      ]
+    needs: [version, build-linux, build-windows]
     steps:
       -
         name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      # -
-      #   # Run only for main branch
-      #   if: ${{ github.ref == 'refs/heads/main' }}
-      #   name: Get related pull request
-      #   uses: 8BitJonny/gh-get-current-pr@v2.2.0
-      #   id: changelog-release
-      #   with:
-      #     github-token: ${{ secrets.GITHUB_TOKEN }}
-      # -
-      #   name: Prepare changelog
-      #   id: changelog
-      #   env:
-      #     PRBODY: ${{ steps.changelog-release.outputs.pr_body }}
-      #   run: |
-      #     CHANGELOG=$(echo "$CHANGELOG" | tr -d \")
-      #     PRBODY=$(echo "$PRBODY" | tr -d \")
-      #     ./bin/prepare_changelog.sh $(echo ${GITHUB_REF#refs/heads/}) "${$PRBODY}"
+      -
+        # Run only for main branch
+        if: ${{ github.ref == 'refs/heads/main' }}
+        name: Changelog
+        uses: gandarez/changelog-action@v1.2.0
+        id: changelog-release
+        with:
+          current_tag: ${{ github.sha }}
+          previous_tag: ${{ needs.version.outputs.previous_tag }}
+          exclude: |
+            ^Merge pull request .*
+      -
+        name: Prepare changelog
+        id: changelog
+        env:
+          PRBODY: ${{ steps.changelog-release.outputs.changelog }}
+        run: |
+          PRBODY=$(echo "$PRBODY" | tr -d \")
+          ./bin/prepare_changelog.sh $(echo ${GITHUB_REF#refs/heads/}) "${$PRBODY}"
       -
         name: Download artifacts
         uses: actions/download-artifact@v4
@@ -246,8 +191,7 @@ jobs:
         with:
           name: ${{ needs.version.outputs.semver_tag }}
           tag_name: ${{ needs.version.outputs.semver_tag }}
-          # body: "## Changelog\n${{ steps.changelog.outputs.changelog }}"
-          body: "TBD"
+          body: "## Changelog\n${{ steps.changelog.outputs.changelog }}"
           target_commitish: ${{ github.sha }}
           draft: false
           files: ./release/*
@@ -265,35 +209,3 @@ jobs:
               repo: context.repo.repo,
               ref: "tags/${{ needs.version.outputs.semver_tag }}"
             })
-      # -
-      #   name: "Slack notification"
-      #   uses: 8398a7/action-slack@v3
-      #   if: ${{ success() }}
-      #   with:
-      #     status: custom
-      #     fields: message
-      #     custom_payload: |
-      #       {
-      #         username: 'WakaTime Bot',
-      #         icon_emoji: ':mega:',
-      #         blocks: [
-      #           {
-      #             type: 'section',
-      #             text: {
-      #               type: 'mrkdwn',
-      #               text: `New <https://github.com/wakatime/wakatime-cli|wakatime-cli> version <https://github.com/wakatime/wakatime-cli/releases/tag/${{ needs.version.outputs.semver_tag }}|${{ needs.version.outputs.semver_tag }}> released`
-      #             }
-      #           },
-      #           {
-      #             type: 'context',
-      #             elements: [
-      #               {
-      #                 type: 'mrkdwn',
-      #                 text: `${{ steps.changelog.outputs.slack }}`
-      #               }
-      #             ]
-      #           }
-      #         ]
-      #       }
-      #   env:
-      #     SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
