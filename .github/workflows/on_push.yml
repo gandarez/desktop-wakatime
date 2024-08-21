@@ -101,7 +101,7 @@ jobs:
 
   build-windows:
     name: Build Windows
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: [version]
     steps:
       -
@@ -126,7 +126,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
-        run: npm run build -- --win
+        run: npm run build
       -
         name: Upload artifacts
         uses: actions/upload-artifact@v4
