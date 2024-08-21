@@ -174,7 +174,7 @@ jobs:
           PRBODY: ${{ steps.changelog-release.outputs.changelog }}
         run: |
           PRBODY=$(echo "$PRBODY" | tr -d \")
-          ./bin/prepare_changelog.sh $(echo ${GITHUB_REF#refs/heads/}) "${$PRBODY}"
+          ./bin/prepare_changelog.sh $(echo ${GITHUB_REF#refs/heads/}) "$PRBODY"
       -
         name: Download artifacts
         uses: actions/download-artifact@v4
