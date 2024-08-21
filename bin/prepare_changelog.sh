@@ -23,7 +23,7 @@ replace_for_release() {
 }
 
 parse_for_release() {
-    changelog=$(awk 'f;/Changelog:/{f=1}' <<< "$changelog")
+    changelog=$(awk 'f;/## Changelog/{f=1}' <<< "$changelog")
 }
 
 parse_for_release
