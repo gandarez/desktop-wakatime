@@ -8,11 +8,36 @@ on:
     tags-ignore: ["**"]
 
 jobs:
+  test-shell-script:
+    name: Unit Tests Shell Script
+    runs-on: macos-latest
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      -
+        name: Run ShellCheck
+        uses: ludeeus/action-shellcheck@master
+        with:
+          ignore_paths: 'bin/tests/libs'
+      -
+        name: Setup bats
+        uses: mig4/setup-bats@v1
+        with:
+          bats-version: 1.11.0
+      -
+        name: Unit tests
+        shell: bash
+        run: bats ./bin/tests
+
   version:
     name: Version
     concurrency: tagging
     if: ${{ github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
+    needs: [test-shell-script]
     outputs:
       semver: ${{ steps.format.outputs.semver }}
       semver_tag: ${{ steps.semver-tag.outputs.semver_tag }}
@@ -174,7 +199,7 @@ jobs:
           PRBODY: ${{ steps.changelog-release.outputs.changelog }}
         run: |
           PRBODY=$(echo "$PRBODY" | tr -d \")
-          ./bin/prepare_changelog.sh "$PRBODY"
+          ./bin/prepare_changelog.sh "${PRBODY}"
       -
         name: Download artifacts
         uses: actions/download-artifact@v4
@@ -193,6 +218,7 @@ jobs:
           tag_name: ${{ needs.version.outputs.semver_tag }}
           body: "## Changelog\n${{ steps.changelog.outputs.changelog }}"
           target_commitish: ${{ github.sha }}
+          prerelease: false
           draft: false
           files: ./release/*
         env:
